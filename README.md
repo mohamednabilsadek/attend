@@ -29,12 +29,14 @@ Idea: **The page** is on GitHub Pages, and **the database** is a Google Apps Scr
 * Changing a user's email requires setting a new password for them (passwords are hashed using the email).
 * You can also open the page without `config.json` using the URL: `index.html?api=<exec_url>`.
 
-##Local server:
-You've prepared a local Ubuntu hosting package: hudoori-selfhost.tar.gz along with README-ar.md.
+# Local server:
+You've prepared a local Ubuntu hosting package: hudoori-selfhost tar.zip along with README-ar.md.
 
 The package is a single Node server (server.js) that serves both the page and the database from the same address, eliminating the need for Google or GitHub. You tested it locally and it worked as expected: the page and API, database creation, data persistence after reboot, daily backups, and path protection. However, you haven't tested it on a real Ubuntu machine or via Caddy.
 
-Quick Steps:
+
+
+## Quick Steps:
 1.Copy the folder to the server, then run sudo bash install.sh. It requires Node 16 or newer and has no external dependencies.
 
 2.Edit /opt/hudoori/hudoori.env and set SETUP_CODE to a secret code of your choice. The server will not start with the default placeholder code.
@@ -45,14 +47,14 @@ Quick Steps:
 
 5.Open the link, select Admin, then Create Database, and enter your setup code.
 
-##File Locations:
+## File Locations:
 -----------------
 Data: In /opt/hudoori/data/hudoori-db.json.
 Daily Backups: In data/backups/, keeping the last 30 copies.
 Logs: journalctl -u hudoori -f.
 
 
-##Important Notes:
+## Important Notes:
 ----------------
 * HTTPS on local networks: With a self-signed Caddy certificate, you need to install the root certificate once on each phone. If you have a public domain, Let's Encrypt requires no phone setup. If you don't want to open ports, Cloudflare Tunnel or Tailscale are great alternatives.
 * Server Security: It listens on 127.0.0.1 only, and Caddy receives port 443 traffic. Close port 8080 in your firewall.
@@ -60,11 +62,11 @@ Logs: journalctl -u hudoori -f.
 * Migrating from Google: Export an encrypted settings backup from your old version, then restore it on the new site via Admin $\leftarrow$ Restore Backup.
 
 
-##How many courses and students can this system handle managing at the same time?
+# How many courses and students can this system handle managing at the same time?
 
 The answer depends on the deployment environment. I measured performance on experimental databases after a full semester, on a local server on the same machine without a real network.
 
-### On a Local Ubuntu Server
+## On a Local Ubuntu Server
 
 | Test Scale | Database Size | Student Response |
 | --- | --- | --- |
