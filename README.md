@@ -29,11 +29,62 @@ Idea: **The page** is on GitHub Pages, and **the database** is a Google Apps Scr
 * Changing a user's email requires setting a new password for them (passwords are hashed using the email).
 * You can also open the page without `config.json` using the URL: `index.html?api=<exec_url>`.
 
-# Local server:
+# Hudoori on a Local Ubuntu Server
 You've prepared a local Ubuntu hosting package: hudoori-selfhost tar.zip along with README-ar.md.
 
 The package is a single Node server (server.js) that serves both the page and the database from the same address, eliminating the need for Google or GitHub. You tested it locally and it worked as expected: the page and API, database creation, data persistence after reboot, daily backups, and path protection. However, you haven't tested it on a real Ubuntu machine or via Caddy.
 
+
+The server here (`server.js`) serves both the webpage and the database from the same address. It requires no external libraries, just Node.js $\ge$ 16. Data resides in a single file: `/opt/hudoori/data/hudoori-db.json`, with automated daily backups in `data/backups/` (retaining the last 30 days).
+
+## 1) Installation
+
+```bash
+scp -r hudoori-selfhost user@SERVER:~/      # Or copy the folder using any method
+ssh user@SERVER
+cd hudoori-selfhost
+sudo bash install.sh
+sudo nano /opt/hudoori/hudoori.env          # Change SETUP_CODE to a secret code of your choice
+sudo systemctl enable --now hudoori
+systemctl status hudoori                    # Should show active (running)
+
+```
+
+Quick test: `curl -s localhost:8080/api -d '{"op":"status"}'`
+
+> If your Node version is outdated ($< 16$): `curl -fsSL [https://deb.nodesource.com/setup_20.x](https://deb.nodesource.com/setup_20.x) | sudo -E bash - && sudo apt install -y nodejs`
+
+## 2) HTTPS (Required for camera and location permissions)
+
+Browsers only permit camera and GPS access over HTTPS (or localhost). Choose one of the following solutions:
+
+**A) Internal Network Only (Caddy):**
+
+```bash
+sudo apt install -y caddy
+sudo cp Caddyfile /etc/caddy/Caddyfile      # Modify the name to hudoori.lan, or use your IP address
+sudo systemctl reload caddy
+
+```
+
+* Point the domain name to the server (via a DNS record in your router, or the `hosts` file).
+* Caddy generates a local certificate; on each phone, install the root certificate once located at: `/var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt` (and enable it as a trusted CA). Without this, the browser will display a warning and permissions won't work properly.
+
+**B) You have a public domain:** Use Option B in the `Caddyfile` (open ports 80 and 443) to obtain a Let's Encrypt certificate automatically with no phone setup required.
+
+**C) Without opening ports:** Cloudflare Tunnel or Tailscale (Funnel) provide a direct HTTPS link pointing to `localhost:8080`.
+
+## 3) First Use
+
+Open the link $\leftarrow$ **Admin** $\leftarrow$ **Create Database** $\leftarrow$ Setup Code = the value of `SETUP_CODE`.
+
+## 4) Maintenance
+
+* **Logs:** `journalctl -u hudoori -f`
+* **Updating page/server:** Replace the files in `/opt/hudoori` then run `sudo systemctl restart hudoori` (data in `data/` remains unaffected).
+* **Backups:** Periodically copy `/opt/hudoori/data/` elsewhere (the file is unencrypted, so protect it with server permissions). The "encrypted export" of settings from the old version remains fully compatible.
+* **Migrating from Google Apps Script:** From the settings in the old version, click "Export Encrypted Backup", then on the new site: Admin $\leftarrow$ "Restore Backup" (using the new setup code).
+* **Firewall:** Open port 443 (and port 80 if using Let's Encrypt) only; port 8080 should remain closed since the server listens exclusively on `127.0.0.1`.
 
 
 ## Quick Steps:
